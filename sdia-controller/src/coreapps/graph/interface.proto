@@ -1,0 +1,92 @@
+message RPC {
+
+  extensions 101 to max;
+
+  enum Type {
+    InitRequest      = 1;
+    InitResponse     = 2;
+    Topology         = 3;
+    PacketInRequest  = 4;
+    PacketInResponse = 5;
+    DataPush         = 6;
+    DataReceive      = 7;
+  }
+
+  required Type type = 1;
+}
+
+
+message InitRequest {
+
+  extend RPC {
+    required InitRequest msg = 101;
+  }
+
+  required string ism = 1;
+}
+
+
+message InitResponse {
+
+  extend RPC {
+    required InitResponse msg = 102;
+  }
+
+  required uint64 domain = 1;
+}
+
+message Topology {
+
+  extend RPC {
+    required Topology msg = 103;
+  }
+
+  required string dot  = 1;
+}
+
+message PacketInRequest {
+
+  extend RPC {
+    required PacketInRequest msg = 104;
+  }
+
+  required uint32 cookie  = 1;
+  required uint32 srcV    = 2;
+  required bytes  packet  = 3;
+}
+
+message PacketInResponse {
+
+  extend RPC {
+    required PacketInResponse msg = 105;
+  }
+
+  required uint32 cookie = 1;
+  required uint32 srcV   = 2;
+  required uint32 dstV   = 3;
+  required bytes match   = 4;
+   
+}
+
+
+message DataPush {
+
+  extend RPC {
+    required DataPush msg = 106;
+  }
+
+  required int64 srcV = 1;
+  required int64 dstV = 2;
+  required bytes data = 3;
+}
+
+message DataReceive {
+
+  extend RPC {
+    required DataReceive msg = 107;
+  }
+
+  required int64 srcV = 1;
+  required bytes data = 2;
+
+}

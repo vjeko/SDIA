@@ -1,0 +1,8 @@
+{
+  "graph" : {
+    "library" : "graph",
+    "dependencies" : {
+      "openflow-manager" : "0"
+    }
+  }
+}

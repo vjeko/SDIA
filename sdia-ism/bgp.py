@@ -77,15 +77,15 @@ class BGP( Int32StringReceiver ):
       srcV_it = networkx.all_neighbors(self.graph, dstV)
       try:
         srcV = srcV_it.next()
-        #reactor.callLater(count, self.pushUpdate, srcV, dstV)
-        self.pushUpdate(srcV, dstV)
+        #reactor.callLater(count, self.pushData, srcV, dstV)
+        self.pushData(srcV, dstV)
       except StopIteration: pass
 
     reactor.callLater(self.updateInterval, self.pushData)
 
 
 
-  def pushUpdate(self, srcV, dstV):
+  def pushData(self, srcV, dstV):
     rpc = RPC()
     rpc.type = RPC.DataPush
     update = rpc.Extensions[DataPush.msg]

@@ -109,6 +109,14 @@ bool is_unicast(const v1::ofp_match& flow) {
   return false;
 }
 
+uint32_t get_flow(const ip6_hdr& ip6) {
+  const uint8_t next_header = ip6.ip6_ctlun.ip6_un1.ip6_un1_nxt;
+  const uint32_t flow_label =
+      (ntohl(ip6.ip6_ctlun.ip6_un1.ip6_un1_flow) << 12) >> 12;
+
+  return flow_label;
+}
+
 
 dp_node::transaction_t graph::get_transaction_id() {
   static uint64_t transaction_id;

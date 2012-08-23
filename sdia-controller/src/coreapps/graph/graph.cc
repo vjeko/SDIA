@@ -30,13 +30,13 @@
 #include <boost/random/variate_generator.hpp>
 
 #include <boost/graph/dijkstra_shortest_paths_no_color_map.hpp>
+#include <boost/graph/prim_minimum_spanning_tree.hpp>
 #include <boost/range.hpp>
 
 #include "helper.cc"
 #include "lldp.cc"
 #include "events.cc"
 #include "end-host.cc"
-#include "ism.cc"
 #include "interfaces.cc"
 #include "commands.hh"
 
@@ -70,7 +70,7 @@ Disposition graph::handle(const Event& e) {
   flow.from_packet(pi.in_port(), pi.packet());
 
   if (flow.dl_type() == OFP_DL_TYPE_NOT_ETH_TYPE) {
-    return CONTINUE;
+    return STOP;
   }
 
   /*
@@ -80,22 +80,28 @@ Disposition graph::handle(const Event& e) {
    */
   if (flow.dl_type() == ntohs(ethernet::LLDP)) {
     neighbor_discovery(ofe, pi);
-    return CONTINUE;
-  }
-
-  if (flow.dl_type() == 0xffff) {
-    update_receive(ofe, pi);
-    return CONTINUE;
+    return STOP;
   }
 
   /* Handle only IP6 packets. */
   if (flow.dl_type() != ntohs(ethernet::IPV6)) {
-    return CONTINUE;
+    return STOP;
   }
+
+
 
   vertex_t srcV;
   if (is_unicast(flow.dl_src())) {
     srcV = collect<int>(ofe, pi);
+  }
+
+  const ip6_hdr& ip6 = pull_type<ip6_hdr>( pi.packet(), sizeof(eth_header) );
+  const uint32_t flow_label = get_flow(ip6);
+  printf("IDR %d is responsible for routing this packet.\n", flow_label);
+
+  if (flow.dl_src().is_zero()) {
+    update_receive(ofe, pi);
+    return STOP;
   }
 
   /*
@@ -108,10 +114,8 @@ Disposition graph::handle(const Event& e) {
   if (is_unicast(flow)) {
 
     const uint32_t label = get_random<uint32_t>();
-    const ip6_hdr& ip6 = pull_type<const ip6_hdr>(pi.packet(), sizeof(eth_header) );
     auto p = std::make_pair(ip6.ip6_src, ip6.ip6_dst);
     labeling_[label] = p;
-
 
     distribute_packet(pi, label, srcV);
 
@@ -124,7 +128,7 @@ Disposition graph::handle(const Event& e) {
      */
     flood_spanning_tree(ofe, pi);
   }
-  return CONTINUE;
+  return STOP;
 }
 
 

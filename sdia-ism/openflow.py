@@ -25,6 +25,7 @@ def NXM_OF_ETH_TYPE():    return NXM_HEADER  (0x0000,  3, 2)
 class NodeType:
   REMOTE_DOMAIN = '-4'
   OPENFLOW      = '-2'
+  HOST          = '-1'
 
 
 

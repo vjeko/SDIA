@@ -27,9 +27,8 @@ class Pathlet( Int32StringReceiver ):
   
     self.attr =     {}
     self.mapping =  {}
-    self.remote =   {}
-    self.local =    []
     self.topology = {}
+    self.pathlet  = {}
 
     self.lock = defer.DeferredLock()
     self.graph = networkx.Graph()
@@ -53,15 +52,7 @@ class Pathlet( Int32StringReceiver ):
 
 
   def handleDataReceive(self, rpc):
-    data = rpc.Extensions[DataReceive.msg].data
-    srcV = rpc.Extensions[DataReceive.msg].srcV
-
-    eth = dpkt.ethernet.Ethernet(data)
-    unpacked = pickle.loads(eth.data)
-    addresses = map(lambda (x, y): (IPv6Network(x), y), unpacked)
-    for (prefix, domainId) in addresses:
-      self.remote[prefix] = (domainId, srcV)
-
+    pass
 
 
   def pushData(self):

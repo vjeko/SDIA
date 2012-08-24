@@ -25,9 +25,10 @@ class Pathlet( Int32StringReceiver ):
   
   def __init__(self):
   
-    self.attr =     {}
-    self.mapping =  {}
-    self.topology = {}
+    self.attr =      {}
+    self.mapping =   {}
+    self.rMapping =  {}
+    self.topology =  {}
     self.pathlets  = {}
 
     self.lock = defer.DeferredLock()
@@ -48,6 +49,45 @@ class Pathlet( Int32StringReceiver ):
 
     for node in pyGraph.get_nodes():
       self.attr[node.get_name()] = node.obj_dict['attributes']
+
+
+
+  def handlePacketIn(self, rpc):
+    packet = rpc.Extensions[PacketInRequest.msg].packet
+    srcV = rpc.Extensions[PacketInRequest.msg].srcV
+    cookie = rpc.Extensions[PacketInRequest.msg].cookie
+    eth = dpkt.ethernet.Ethernet( packet )
+    ip6 = eth.data
+
+    srcAddrInt = int((ip6.src).encode('hex'), 16)
+    dstAddrInt = int((ip6.dst).encode('hex'), 16)
+
+    paths = bytearray(ip6.dst)
+    nextHop = paths.pop(0)
+
+    print 'next hop:', nextHop
+    eth.data.dst = str(paths)
+
+    self.mapping[ip6.src] = srcV
+    self.rMapping[srcV] = srcAddrInt
+
+    dstAddr = IPv6Address( dstAddrInt )
+
+    rpc = RPC()
+    rpc.type = RPC.DataPush
+    update = rpc.Extensions[DataPush.msg]
+
+    try:
+      fwdV_it = networkx.all_neighbors(self.graph, str(nextHop))
+      fwdV = fwdV_it.next()
+    except: return
+ 
+    update.srcV = int(fwdV)
+    update.dstV = int(nextHop)
+    update.data = str(eth)
+
+    self.sendToController( rpc.SerializeToString() )
+
 
 
 
@@ -110,9 +150,10 @@ class Pathlet( Int32StringReceiver ):
       if pathlet is not None:
         advertisedPathlets.append( (vertex, pathlet) )
       if attributes['type'] == NodeType.HOST:
-        advertisedPathlets.append( vertex )
+        addrInt = self.rMapping.get( int(vertex) )
+        if addrInt is not None:
+          advertisedPathlets.append( (vertex, addrInt) )
 
-    print 'pathlets:', advertisedPathlets
     eth = self.encapsulate( advertisedPathlets )
     update.data = str(eth)
     self.sendToController( rpc.SerializeToString() )
@@ -137,11 +178,6 @@ class Pathlet( Int32StringReceiver ):
     self.lock.acquire()
     self.sendString( data )
     self.lock.release()
-
-
-
-  def handlePacketIn(self, rpc):
-    pass
 
 
 

@@ -59,7 +59,6 @@ class BGP( Int32StringReceiver ):
       self.attr.iteritems()
     )
 
-    count = 1
     for (dstV, value) in remoteDomains:
       srcV_it = networkx.all_neighbors(self.graph, dstV)
       try:

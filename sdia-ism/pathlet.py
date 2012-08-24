@@ -28,7 +28,7 @@ class Pathlet( Int32StringReceiver ):
     self.attr =     {}
     self.mapping =  {}
     self.topology = {}
-    self.pathlet  = {}
+    self.pathlets  = {}
 
     self.lock = defer.DeferredLock()
     self.graph = networkx.Graph()
@@ -52,10 +52,24 @@ class Pathlet( Int32StringReceiver ):
 
 
   def handleDataReceive(self, rpc):
-    pass
+    data = rpc.Extensions[DataReceive.msg].data
+    srcV = rpc.Extensions[DataReceive.msg].srcV
+
+    eth = dpkt.ethernet.Ethernet(data)
+    unpacked = pickle.loads(  data[len(eth):] )
+    self.stich(srcV, unpacked)
+
+
+
+  def stich(self, srcV, data):
+    self.pathlets[str(srcV)] = data
+
 
 
   def pushData(self):
+
+    print self.pathlets
+
     remoteDomains = filter(
       lambda (key, value): value['type'] == NodeType.REMOTE_DOMAIN,
       self.attr.iteritems()
@@ -65,18 +79,58 @@ class Pathlet( Int32StringReceiver ):
       srcV_it = networkx.all_neighbors(self.graph, dstV)
       try:
         srcV = srcV_it.next()
-        self.pushData(srcV, dstV)
+        self.pushData2(srcV, dstV)
       except StopIteration: pass
 
     reactor.callLater(self.updateInterval, self.pushData)
 
 
 
-  def pushData(self, srcV, dstV):
-    remoteDomains = filter(
-      lambda (key, value): value['type'] != NodeType.OPENFLOW,
+  def pushData2(self, srcV, dstV):
+
+    rpc = RPC()
+    rpc.type = RPC.DataPush
+    update = rpc.Extensions[DataPush.msg]
+    update.srcV = int(srcV)
+    update.dstV = int(dstV)
+
+    nodes = filter(
+      lambda (vertex, attributes): attributes['type'] != NodeType.OPENFLOW,
       self.attr.iteritems()
     )
+
+    nodes = filter(
+      lambda (vertex, attributes): int(vertex) != int(dstV),
+      nodes
+    )
+
+    advertisedPathlets = []
+    for (vertex, attributes) in nodes:
+      pathlet = self.pathlets.get(vertex)
+      if pathlet is not None:
+        advertisedPathlets.append( (vertex, pathlet) )
+      if attributes['type'] == NodeType.HOST:
+        advertisedPathlets.append( vertex )
+
+    print 'pathlets:', advertisedPathlets
+    eth = self.encapsulate( advertisedPathlets )
+    update.data = str(eth)
+    self.sendToController( rpc.SerializeToString() )
+
+
+
+  def encapsulate(self, data):
+    ip6 = dpkt.ip6.IP6(
+      data = pickle.dumps( data, pickle.HIGHEST_PROTOCOL )
+    )
+
+    eth = dpkt.ethernet.Ethernet(
+      type = 34525,
+      data = ip6
+    )
+    
+    return eth
+
 
 
   def sendToController(self, data):

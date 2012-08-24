@@ -8,11 +8,13 @@ from twisted.protocols.basic import LineReceiver, Int32StringReceiver
 
 import sys
 import socket
-import bgp
+#import bgp
+import pathlet
 
 
 class ISMFactory(ClientFactory):
-  protocol = bgp.BGP
+  #protocol = bgp.BGP
+  protocol = pathlet.Pathlet
 
   def clientConnectionFailed(self, connector, reason):
     print 'connection failed:', reason.getErrorMessage()
@@ -25,7 +27,7 @@ class ISMFactory(ClientFactory):
 
 def main():
 
-  bgp.conf = str(sys.argv[1])
+  pathlet.conf = str(sys.argv[1])
   addr = str(sys.argv[2])
   port = int(sys.argv[3])
 

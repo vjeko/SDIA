@@ -52,19 +52,6 @@ class BGP( Int32StringReceiver ):
 
 
 
-  def handleDataReceive(self, rpc):
-    data = rpc.Extensions[DataReceive.msg].data
-    srcV = rpc.Extensions[DataReceive.msg].srcV
-
-    eth = dpkt.ethernet.Ethernet(data)
-    unpacked = pickle.loads(eth.data)
-    addresses = map(lambda (x, y): (IPv6Network(x), y), unpacked)
-    for (prefix, domainId) in addresses:
-      self.remote[prefix] = (domainId, srcV)
-
-    self.printPrefixes()
-
-
 
   def pushData(self):
     remoteDomains = filter(
@@ -77,15 +64,29 @@ class BGP( Int32StringReceiver ):
       srcV_it = networkx.all_neighbors(self.graph, dstV)
       try:
         srcV = srcV_it.next()
-        #reactor.callLater(count, self.pushData, srcV, dstV)
-        self.pushData(srcV, dstV)
+        self.dataPush(srcV, dstV)
       except StopIteration: pass
 
     reactor.callLater(self.updateInterval, self.pushData)
 
 
 
-  def pushData(self, srcV, dstV):
+  def handleDataReceive(self, rpc):
+    data = rpc.Extensions[DataReceive.msg].data
+    srcV = rpc.Extensions[DataReceive.msg].srcV
+
+    eth = dpkt.ethernet.Ethernet(data)
+    unpacked = pickle.loads(  data[len(eth):] )
+
+    addresses = map(lambda (x, y): (IPv6Network(x), y), unpacked)
+    for (prefix, domainId) in addresses:
+      self.remote[prefix] = (domainId, srcV)
+
+    self.printPrefixes()
+
+
+
+  def dataPush(self, srcV, dstV):
     rpc = RPC()
     rpc.type = RPC.DataPush
     update = rpc.Extensions[DataPush.msg]
@@ -105,16 +106,24 @@ class BGP( Int32StringReceiver ):
       self.local)
 
     advertisedPrefixes = remotePrefixes + localPrefixes
-    pickle.dumps( advertisedPrefixes, pickle.HIGHEST_PROTOCOL )
 
-    eth = dpkt.ethernet.Ethernet(
-      type = 0xffff, data = pickle.dumps( advertisedPrefixes )
-    )
-
+    eth = self.encapsulate( advertisedPrefixes )
     update.data = str(eth)
-    ddd = pickle.dumps( advertisedPrefixes )
     self.sendToController( rpc.SerializeToString() )
 
+
+
+  def encapsulate(self, data):
+    ip6 = dpkt.ip6.IP6(
+      data = pickle.dumps( data, pickle.HIGHEST_PROTOCOL )
+    )
+
+    eth = dpkt.ethernet.Ethernet(
+      type = 34525,
+      data = ip6
+    )
+    
+    return eth
 
 
   def sendToController(self, data):

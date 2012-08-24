@@ -118,8 +118,6 @@ Disposition graph::handle(const Event& e) {
     labeling_[label] = p;
 
     distribute_packet(pi, label, srcV);
-
-    //establish(label, sndV, rcvV);
   } else {
     /*
      * Otherwise, just flood.

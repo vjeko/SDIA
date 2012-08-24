@@ -19,8 +19,8 @@ graph::vertex_t graph::collect(
   bool modified_vertex = false;
   bool modified_edge = false;
 
-  dp_link rcv(ofe.dp.id().as_host(), pi.in_port(), dp_link::OPENFLOW);
-  dp_link snd(flow.dl_src().hb_long(), pi.in_port(), dp_node::HOST);
+  dp_link rcv(ofe.dp.id().as_host(), pi.in_port(), domain_id_, dp_link::OPENFLOW);
+  dp_link snd(flow.dl_src().hb_long(), pi.in_port(), domain_id_, dp_node::HOST);
 
   // Let's see what's located on the incoming port...
   auto it_rcv = edge_map_.find(rcv);

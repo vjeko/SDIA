@@ -73,10 +73,12 @@ class Pathlet( Int32StringReceiver ):
 
 
   def pushData(self, srcV, dstV):
-    remoteDomains = filter(
+    nodes = filter(
       lambda (key, value): value['type'] != NodeType.OPENFLOW,
       self.attr.iteritems()
     )
+
+    print nodes
 
 
   def sendToController(self, data):

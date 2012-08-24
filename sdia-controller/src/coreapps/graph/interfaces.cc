@@ -102,18 +102,23 @@ void session::andleDataPush(RPC& rpc) {
     auto it = s.begin();
 
     for (; it != s.end(); std::advance(it, 1)) {
-      if (it->domain_ == graph_->domain_id_)
+      if ( (it->domain_ == graph_->domain_id_) &&
+           (it->type_ == dp_link::OPENFLOW))
         break;
     }
 
     BOOST_ASSERT(it != s.end());
+
     BOOST_FOREACH(auto& dev, graph_->device_map) {
+      std::cout << "DP: " << dev.first << std::endl;
       if (dev.first == it->datapath_) {
         auto sp = new std::string(update.data());
         boost::asio::const_buffer buffer(sp->c_str(), sp->size());
         graph_->send_blob(buffer, dev.second, it->port_);
       }
     }
+  } else {
+    std::cout << "unable to find the edge" << std::endl;
   }
 
 }

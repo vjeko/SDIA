@@ -51,7 +51,7 @@ class BGP( Int32StringReceiver ):
 
   def pushData(self):
     remoteDomains = filter(
-      lambda (key, value): value['type'] == NodeType.REMOTE_DOMAIN,
+      lambda (vertex, attribute): attribute['type'] == NodeType.REMOTE_DOMAIN,
       self.attr.iteritems()
     )
 

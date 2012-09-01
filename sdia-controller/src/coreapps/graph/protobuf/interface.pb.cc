@@ -129,9 +129,10 @@ void protobuf_AssignDesc_interface_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(PacketInRequest));
   PacketInResponse_descriptor_ = file->message_type(5);
-  static const int PacketInResponse_offsets_[4] = {
+  static const int PacketInResponse_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PacketInResponse, cookie_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PacketInResponse, srcv_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PacketInResponse, midv_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PacketInResponse, dstv_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PacketInResponse, match_),
   };
@@ -248,14 +249,15 @@ void protobuf_AddDesc_interface_2eproto() {
     "5\n\010Topology\022\013\n\003dot\030\001 \002(\t2\034\n\003msg\022\004.RPC\030g "
     "\002(\0132\t.Topology\"d\n\017PacketInRequest\022\016\n\006coo"
     "kie\030\001 \002(\r\022\014\n\004srcV\030\002 \002(\r\022\016\n\006packet\030\003 \002(\0142"
-    "#\n\003msg\022\004.RPC\030h \002(\0132\020.PacketInRequest\"s\n\020"
-    "PacketInResponse\022\016\n\006cookie\030\001 \002(\r\022\014\n\004srcV"
-    "\030\002 \002(\r\022\014\n\004dstV\030\003 \002(\r\022\r\n\005match\030\004 \002(\0142$\n\003m"
-    "sg\022\004.RPC\030i \002(\0132\021.PacketInResponse\"R\n\010Dat"
-    "aPush\022\014\n\004srcV\030\001 \002(\003\022\014\n\004dstV\030\002 \002(\003\022\014\n\004dat"
-    "a\030\003 \002(\0142\034\n\003msg\022\004.RPC\030j \002(\0132\t.DataPush\"J\n"
-    "\013DataReceive\022\014\n\004srcV\030\001 \002(\003\022\014\n\004data\030\002 \002(\014"
-    "2\037\n\003msg\022\004.RPC\030k \002(\0132\014.DataReceive", 753);
+    "#\n\003msg\022\004.RPC\030h \002(\0132\020.PacketInRequest\"\201\001\n"
+    "\020PacketInResponse\022\016\n\006cookie\030\001 \002(\r\022\014\n\004src"
+    "V\030\002 \002(\r\022\014\n\004midV\030\003 \001(\r\022\014\n\004dstV\030\004 \002(\r\022\r\n\005m"
+    "atch\030\005 \002(\0142$\n\003msg\022\004.RPC\030i \002(\0132\021.PacketIn"
+    "Response\"R\n\010DataPush\022\014\n\004srcV\030\001 \002(\003\022\014\n\004ds"
+    "tV\030\002 \002(\003\022\014\n\004data\030\003 \002(\0142\034\n\003msg\022\004.RPC\030j \002("
+    "\0132\t.DataPush\"J\n\013DataReceive\022\014\n\004srcV\030\001 \002("
+    "\003\022\014\n\004data\030\002 \002(\0142\037\n\003msg\022\004.RPC\030k \002(\0132\014.Dat"
+    "aReceive", 768);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "interface.proto", &protobuf_RegisterTypes);
   RPC::default_instance_ = new RPC();
@@ -1560,6 +1562,7 @@ void PacketInRequest::Swap(PacketInRequest* other) {
 #ifndef _MSC_VER
 const int PacketInResponse::kCookieFieldNumber;
 const int PacketInResponse::kSrcVFieldNumber;
+const int PacketInResponse::kMidVFieldNumber;
 const int PacketInResponse::kDstVFieldNumber;
 const int PacketInResponse::kMatchFieldNumber;
 #endif  // !_MSC_VER
@@ -1588,6 +1591,7 @@ void PacketInResponse::SharedCtor() {
   _cached_size_ = 0;
   cookie_ = 0u;
   srcv_ = 0u;
+  midv_ = 0u;
   dstv_ = 0u;
   match_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1629,6 +1633,7 @@ void PacketInResponse::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     cookie_ = 0u;
     srcv_ = 0u;
+    midv_ = 0u;
     dstv_ = 0u;
     if (has_match()) {
       if (match_ != &::google::protobuf::internal::kEmptyString) {
@@ -1673,12 +1678,28 @@ bool PacketInResponse::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_dstV;
+        if (input->ExpectTag(24)) goto parse_midV;
         break;
       }
       
-      // required uint32 dstV = 3;
+      // optional uint32 midV = 3;
       case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_midV:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &midv_)));
+          set_has_midv();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(32)) goto parse_dstV;
+        break;
+      }
+      
+      // required uint32 dstV = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_dstV:
@@ -1689,12 +1710,12 @@ bool PacketInResponse::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_match;
+        if (input->ExpectTag(42)) goto parse_match;
         break;
       }
       
-      // required bytes match = 4;
-      case 4: {
+      // required bytes match = 5;
+      case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_match:
@@ -1735,15 +1756,20 @@ void PacketInResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->srcv(), output);
   }
   
-  // required uint32 dstV = 3;
-  if (has_dstv()) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->dstv(), output);
+  // optional uint32 midV = 3;
+  if (has_midv()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->midv(), output);
   }
   
-  // required bytes match = 4;
+  // required uint32 dstV = 4;
+  if (has_dstv()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->dstv(), output);
+  }
+  
+  // required bytes match = 5;
   if (has_match()) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      4, this->match(), output);
+      5, this->match(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -1764,16 +1790,21 @@ void PacketInResponse::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->srcv(), target);
   }
   
-  // required uint32 dstV = 3;
-  if (has_dstv()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->dstv(), target);
+  // optional uint32 midV = 3;
+  if (has_midv()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->midv(), target);
   }
   
-  // required bytes match = 4;
+  // required uint32 dstV = 4;
+  if (has_dstv()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->dstv(), target);
+  }
+  
+  // required bytes match = 5;
   if (has_match()) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        4, this->match(), target);
+        5, this->match(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -1801,14 +1832,21 @@ int PacketInResponse::ByteSize() const {
           this->srcv());
     }
     
-    // required uint32 dstV = 3;
+    // optional uint32 midV = 3;
+    if (has_midv()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->midv());
+    }
+    
+    // required uint32 dstV = 4;
     if (has_dstv()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->dstv());
     }
     
-    // required bytes match = 4;
+    // required bytes match = 5;
     if (has_match()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
@@ -1848,6 +1886,9 @@ void PacketInResponse::MergeFrom(const PacketInResponse& from) {
     if (from.has_srcv()) {
       set_srcv(from.srcv());
     }
+    if (from.has_midv()) {
+      set_midv(from.midv());
+    }
     if (from.has_dstv()) {
       set_dstv(from.dstv());
     }
@@ -1871,7 +1912,7 @@ void PacketInResponse::CopyFrom(const PacketInResponse& from) {
 }
 
 bool PacketInResponse::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000000f) != 0x0000000f) return false;
+  if ((_has_bits_[0] & 0x0000001b) != 0x0000001b) return false;
   
   return true;
 }
@@ -1880,6 +1921,7 @@ void PacketInResponse::Swap(PacketInResponse* other) {
   if (other != this) {
     std::swap(cookie_, other->cookie_);
     std::swap(srcv_, other->srcv_);
+    std::swap(midv_, other->midv_);
     std::swap(dstv_, other->dstv_);
     std::swap(match_, other->match_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);

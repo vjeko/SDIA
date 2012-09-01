@@ -136,6 +136,20 @@ public:
       const vertex_t sndV,
       const vertex_t rcvV);
 
+  void establish(
+      const uint32_t label,
+      const std::string tlv_match,
+      const vertex_t sndV,
+      const vertex_t midV,
+      const vertex_t rcvV);
+
+  void establish_impl(
+      const uint32_t label,
+      const std::string tlv_match,
+      const vertex_t sndV,
+      const vertex_t rcvV,
+      std::deque<dp_link>& link_queue);
+
   bool update_edge(const dp_node src, const dp_node dst);
   bool update_vertex(const dp_node id, vertex_t& v);
 

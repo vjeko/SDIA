@@ -327,16 +327,88 @@ void graph::build_spanning_tree() {
       );
 }
 
+void graph::establish(
+    const uint32_t label,
+    const std::string tlv_match,
+    const vertex_t sndV,
+    const vertex_t midV,
+    const vertex_t rcvV) {
 
-/*
- * START HERE 1:
- */
+  std::deque<dp_link> link_queue0;
+  establish_impl(label, tlv_match, sndV, rcvV, link_queue0);
+
+  if (link_queue0.empty()) {
+    std::cout << "find_path returned an empty queue!" << std::endl;
+    return;
+  }
+
+  BOOST_ASSERT(!link_queue0.empty());
+
+  link_queue0.pop_front();
+  link_queue0.pop_back();
+
+
+
+  std::deque<dp_link> link_queue1;
+  establish_impl(label, tlv_match, sndV, rcvV, link_queue1);
+
+  if (link_queue1.empty()) {
+    std::cout << "find_path returned an empty queue!" << std::endl;
+    return;
+  }
+
+  BOOST_ASSERT(!link_queue1.empty());
+
+  link_queue1.pop_front();
+  link_queue1.pop_back();
+
+  link_queue0.insert(
+      link_queue0.end(),
+      link_queue1.begin(),
+      link_queue1.end());
+
+  aggregate_map_t aggregate_map;
+  aggregate_flows(label, tlv_match,  link_queue0, aggregate_map);
+}
+
+
 
 void graph::establish(
     const uint32_t label,
     const std::string tlv_match,
     const vertex_t sndV,
     const vertex_t rcvV) {
+
+  std::deque<dp_link> link_queue;
+  establish_impl(label, tlv_match, sndV, rcvV, link_queue);
+
+  if (link_queue.empty()) {
+    std::cout << "find_path returned an empty queue!" << std::endl;
+    return;
+  }
+
+  BOOST_ASSERT(!link_queue.empty());
+
+  link_queue.pop_front();
+  link_queue.pop_back();
+
+
+  BOOST_FOREACH(auto& link, link_queue) {
+    printf("%x:%d\n", link.datapath_, link.port_);
+  }
+
+  aggregate_map_t aggregate_map;
+  aggregate_flows(label, tlv_match, link_queue, aggregate_map);
+}
+
+
+
+void graph::establish_impl(
+    const uint32_t label,
+    const std::string tlv_match,
+    const vertex_t sndV,
+    const vertex_t rcvV,
+    std::deque<dp_link>& link_queue) {
 
   mutex_t::scoped_lock big_lock(big_mutex_);
 
@@ -369,21 +441,7 @@ void graph::establish(
     * All this does is translates the obtained path to a meaningful
     * representation.
     */
-   std::deque<dp_link> link_queue, ids_link_queue;
-   std::deque<vertex_t> vertex_queue, ids_vertex_queue;
-
-   /*
-    * Aggregate map is:
-    *
-    * (A switch in the path) -> (input port, output port)
-    */
-   aggregate_map_t aggregate_map;
-
-   /*
-    * Don't worry about the link_queue_vercor. It is only used for
-    * multi-path routing.
-    */
-   std::vector< std::deque<dp_link> > link_queue_vercor;
+   std::deque<vertex_t> vertex_queue;
 
    bool found = find_path(sndV, rcvV, pm_predecessor,
        link_queue, vertex_queue);
@@ -391,30 +449,6 @@ void graph::establish(
      std::cout << "unable to construct the path!" << std::endl;
      return;
    }
-
-   if (link_queue.empty()) {
-     std::cout << "find_path returned an empty queue!" << std::endl;
-     return;
-   }
-
-   BOOST_ASSERT(!link_queue.empty());
-
-   link_queue.pop_front();
-   link_queue.pop_back();
-
-   link_queue_vercor.push_back(link_queue);
-
-
-   BOOST_FOREACH(auto& link, link_queue) {
-     printf("%x:%d\n", link.datapath_, link.port_);
-   }
-
-   /*
-    * Here you can simply output the packet.
-    *
-    * TODO: Clean up this function.
-    */
-   aggregate_flows(label, tlv_match, link_queue, aggregate_map);
 }
 
 

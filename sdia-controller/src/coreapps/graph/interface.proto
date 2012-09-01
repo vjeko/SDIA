@@ -63,8 +63,9 @@ message PacketInResponse {
 
   required uint32 cookie = 1;
   required uint32 srcV   = 2;
-  required uint32 dstV   = 3;
-  required bytes match   = 4;
+  optional uint32 midV   = 3;
+  required uint32 dstV   = 4;
+  required bytes match   = 5;
    
 }
 

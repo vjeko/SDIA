@@ -623,17 +623,24 @@ class PacketInResponse : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 srcv() const;
   inline void set_srcv(::google::protobuf::uint32 value);
   
-  // required uint32 dstV = 3;
+  // optional uint32 midV = 3;
+  inline bool has_midv() const;
+  inline void clear_midv();
+  static const int kMidVFieldNumber = 3;
+  inline ::google::protobuf::uint32 midv() const;
+  inline void set_midv(::google::protobuf::uint32 value);
+  
+  // required uint32 dstV = 4;
   inline bool has_dstv() const;
   inline void clear_dstv();
-  static const int kDstVFieldNumber = 3;
+  static const int kDstVFieldNumber = 4;
   inline ::google::protobuf::uint32 dstv() const;
   inline void set_dstv(::google::protobuf::uint32 value);
   
-  // required bytes match = 4;
+  // required bytes match = 5;
   inline bool has_match() const;
   inline void clear_match();
-  static const int kMatchFieldNumber = 4;
+  static const int kMatchFieldNumber = 5;
   inline const ::std::string& match() const;
   inline void set_match(const ::std::string& value);
   inline void set_match(const char* value);
@@ -651,6 +658,8 @@ class PacketInResponse : public ::google::protobuf::Message {
   inline void clear_has_cookie();
   inline void set_has_srcv();
   inline void clear_has_srcv();
+  inline void set_has_midv();
+  inline void clear_has_midv();
   inline void set_has_dstv();
   inline void clear_has_dstv();
   inline void set_has_match();
@@ -660,11 +669,12 @@ class PacketInResponse : public ::google::protobuf::Message {
   
   ::google::protobuf::uint32 cookie_;
   ::google::protobuf::uint32 srcv_;
-  ::std::string* match_;
+  ::google::protobuf::uint32 midv_;
   ::google::protobuf::uint32 dstv_;
+  ::std::string* match_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
   
   friend void  protobuf_AddDesc_interface_2eproto();
   friend void protobuf_AssignDesc_interface_2eproto();
@@ -1217,15 +1227,37 @@ inline void PacketInResponse::set_srcv(::google::protobuf::uint32 value) {
   srcv_ = value;
 }
 
-// required uint32 dstV = 3;
-inline bool PacketInResponse::has_dstv() const {
+// optional uint32 midV = 3;
+inline bool PacketInResponse::has_midv() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void PacketInResponse::set_has_dstv() {
+inline void PacketInResponse::set_has_midv() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void PacketInResponse::clear_has_dstv() {
+inline void PacketInResponse::clear_has_midv() {
   _has_bits_[0] &= ~0x00000004u;
+}
+inline void PacketInResponse::clear_midv() {
+  midv_ = 0u;
+  clear_has_midv();
+}
+inline ::google::protobuf::uint32 PacketInResponse::midv() const {
+  return midv_;
+}
+inline void PacketInResponse::set_midv(::google::protobuf::uint32 value) {
+  set_has_midv();
+  midv_ = value;
+}
+
+// required uint32 dstV = 4;
+inline bool PacketInResponse::has_dstv() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void PacketInResponse::set_has_dstv() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void PacketInResponse::clear_has_dstv() {
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void PacketInResponse::clear_dstv() {
   dstv_ = 0u;
@@ -1239,15 +1271,15 @@ inline void PacketInResponse::set_dstv(::google::protobuf::uint32 value) {
   dstv_ = value;
 }
 
-// required bytes match = 4;
+// required bytes match = 5;
 inline bool PacketInResponse::has_match() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void PacketInResponse::set_has_match() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void PacketInResponse::clear_has_match() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void PacketInResponse::clear_match() {
   if (match_ != &::google::protobuf::internal::kEmptyString) {

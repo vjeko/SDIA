@@ -110,7 +110,6 @@ void session::andleDataPush(RPC& rpc) {
     BOOST_ASSERT(it != s.end());
 
     BOOST_FOREACH(auto& dev, graph_->device_map) {
-      std::cout << "DP: " << dev.first << std::endl;
       if (dev.first == it->datapath_) {
         auto sp = new std::string(update.data());
         boost::asio::const_buffer buffer(sp->c_str(), sp->size());

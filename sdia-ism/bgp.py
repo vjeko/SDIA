@@ -17,13 +17,10 @@ import pickle
 
 
 
-conf = None
-
-
 class BGP( Int32StringReceiver ):
 
   
-  def __init__(self):
+  def __init__(self, conf):
   
     self.attr =     {}
     self.mapping =  {}
@@ -36,7 +33,6 @@ class BGP( Int32StringReceiver ):
     self.updateInterval = 4
     self.domain = 0
 
-    global conf
     self.local = map(lambda x: x.strip('\n'), open(conf))
 
 
@@ -55,7 +51,7 @@ class BGP( Int32StringReceiver ):
 
   def pushData(self):
     remoteDomains = filter(
-      lambda (key, value): value['type'] == NodeType.REMOTE_DOMAIN,
+      lambda (vertex, attribute): attribute['type'] == NodeType.REMOTE_DOMAIN,
       self.attr.iteritems()
     )
 

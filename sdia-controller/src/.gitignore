@@ -8,7 +8,6 @@
 .deps
 .libs
 /Makefile
-/Makefile.in
 /configure.ac
 /components.xsd.cc
 /nox.xsd.cc

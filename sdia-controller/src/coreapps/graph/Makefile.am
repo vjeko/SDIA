@@ -13,8 +13,7 @@ pkglib_LTLIBRARIES =                            \
 graph_la_CPPFLAGS =                            \
     $(AM_CPPFLAGS)                              \
     $(TBB_CPPFLAGS)                             \
-    -I$(top_srcdir)/src/coreapps                \
-    -I/usr/include/thrift
+    -I$(top_srcdir)/src/coreapps
 
 graph_la_SOURCES =                             \
     graph.cc protobuf/interface.pb.cc
@@ -26,7 +25,7 @@ graph_la_LDFLAGS =                             \
 graph_la_LIBADD =                              \
     $(TBB_LDFLAGS)                              \
     $(TBB_LIBS)                                 \
-    -lboost_thread -lthrift -lprotobuf
+    -lboost_thread -lprotobuf
 
 NOX_RUNTIMEFILES = meta.json
 

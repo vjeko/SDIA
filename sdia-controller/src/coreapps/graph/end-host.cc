@@ -1,7 +1,6 @@
 #include "graph.hh"
 
 
-template<class F>
 graph::vertex_t graph::collect(
 	      const Openflow_event& ofe,
 	      const v1::ofp_packet_in& pi) {

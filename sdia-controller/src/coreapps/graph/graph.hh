@@ -121,7 +121,6 @@ public:
   Disposition handle(const Event&);
   Disposition join(const Event&);
 
-  template<class F>
   vertex_t collect(
       const Openflow_event& ofe,
       const v1::ofp_packet_in& pi);

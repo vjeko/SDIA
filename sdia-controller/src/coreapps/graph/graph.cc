@@ -92,14 +92,14 @@ Disposition graph::handle(const Event& e) {
 
   vertex_t srcV;
   if (is_unicast(flow.dl_src())) {
-    srcV = collect<int>(ofe, pi);
+    srcV = collect(ofe, pi);
   }
 
   const ip6_hdr& ip6 = pull_type<ip6_hdr>( pi.packet(), sizeof(eth_header) );
   const uint32_t flow_label = get_flow(ip6);
   printf("IDR %d is responsible for routing this packet.\n", flow_label);
 
-  if (flow.dl_src().is_zero()) {
+  if (flow.dl_dst().is_zero()) {
     update_receive(ofe, pi);
     return STOP;
   }

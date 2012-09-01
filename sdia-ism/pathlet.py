@@ -111,7 +111,7 @@ class Pathlet( Int32StringReceiver ):
     print self.pathlets
 
     remoteDomains = filter(
-      lambda (key, value): value['type'] == NodeType.REMOTE_DOMAIN,
+      lambda (key, value): value['type'] != NodeType.OPENFLOW,
       self.attr.iteritems()
     )
 

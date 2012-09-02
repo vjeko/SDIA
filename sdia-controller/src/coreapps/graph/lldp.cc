@@ -90,6 +90,14 @@ void graph::send_lldp() {
         auto& eth = pull_type<eth_header>(raw_of, 0);
         eth.eth_type = ethernet::LLDP;
 
+        eth.eth_src[2] = 8;
+        eth.eth_src[3] = 8;
+        eth.eth_src[4] = 8;
+
+        eth.eth_dst[2] = 6;
+        eth.eth_dst[3] = 6;
+        eth.eth_dst[4] = 6;
+
         auto& lldp = pull_type<lldp_header>(raw_of, sizeof(struct eth_header));
         lldp.port_number = port_num;
         lldp.dp = dp_p->id().as_host();

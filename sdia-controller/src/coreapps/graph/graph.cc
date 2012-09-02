@@ -334,8 +334,10 @@ void graph::establish(
     const vertex_t midV,
     const vertex_t rcvV) {
 
+  std::cout << "routing through a middlebox" << std::endl;
+
   std::deque<dp_link> link_queue0;
-  establish_impl(label, tlv_match, sndV, rcvV, link_queue0);
+  establish_impl(label, tlv_match, sndV, midV, link_queue0);
 
   if (link_queue0.empty()) {
     std::cout << "find_path returned an empty queue!" << std::endl;
@@ -350,7 +352,7 @@ void graph::establish(
 
 
   std::deque<dp_link> link_queue1;
-  establish_impl(label, tlv_match, sndV, rcvV, link_queue1);
+  establish_impl(label, tlv_match, midV, rcvV, link_queue1);
 
   if (link_queue1.empty()) {
     std::cout << "find_path returned an empty queue!" << std::endl;
@@ -366,6 +368,10 @@ void graph::establish(
       link_queue0.end(),
       link_queue1.begin(),
       link_queue1.end());
+
+  BOOST_FOREACH(auto& link, link_queue0) {
+    printf("%x:%d\n", link.datapath_, link.port_);
+  }
 
   aggregate_map_t aggregate_map;
   aggregate_flows(label, tlv_match,  link_queue0, aggregate_map);

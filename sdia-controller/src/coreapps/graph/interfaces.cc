@@ -77,16 +77,29 @@ void session::handle_read_size(
 
 }
 
+
+
 void session::handlePacketInResponse(RPC& rpc) {
 
   const PacketInResponse response = rpc.GetExtension(PacketInResponse::msg);
 
-  graph_->establish(
-      response.cookie(),
-      response.match(),
-      response.srcv(),
-      response.dstv());
+  if(response.has_midv()) {
+    graph_->establish(
+        response.cookie(),
+        response.match(),
+        response.srcv(),
+        response.midv(),
+        response.dstv());
+  } else {
+    graph_->establish(
+        response.cookie(),
+        response.match(),
+        response.srcv(),
+        response.dstv());
+  }
 }
+
+
 
 void session::andleDataPush(RPC& rpc) {
 

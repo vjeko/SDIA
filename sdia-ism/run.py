@@ -21,8 +21,14 @@ class ISMFactory(ClientFactory):
   protocol = middlebox.Middlebox
 
   def buildProtocol(self, address):
-    conf = str(sys.argv[1])
-    proto = self.protocol( conf )
+    conf = str(sys.argv[4])
+
+    if self.protocol == middlebox.Middlebox:
+      parentConf = str(sys.argv[3])
+      proto = self.protocol( conf, parentConf )
+    else:
+      proto = self.protocol( conf )
+
     proto.factory = self
     return proto
 
@@ -37,8 +43,8 @@ class ISMFactory(ClientFactory):
 
 def main():
 
-  addr = str(sys.argv[2])
-  port = int(sys.argv[3])
+  addr = str(sys.argv[1])
+  port = int(sys.argv[2])
 
   factory = ISMFactory()
   reactor.connectTCP(addr, port, factory)

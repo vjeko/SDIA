@@ -11,12 +11,14 @@ import socket
 import bgp
 import pathlet
 import icn
+import middlebox
 
 
 class ISMFactory(ClientFactory):
   #protocol = bgp.BGP
   #protocol = pathlet.Pathlet
-  protocol = icn.ICN
+  #protocol = icn.ICN
+  protocol = middlebox.Middlebox
 
   def buildProtocol(self, address):
     conf = str(sys.argv[1])

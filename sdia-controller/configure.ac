@@ -128,7 +128,6 @@ src/Makefile
 src/coreapps/graph/Makefile
 src/coreapps/Makefile
 src/coreapps/openflow/Makefile
-src/coreapps/graph.bck/Makefile
 src/coreapps/switch/Makefile
 src/utilities/Makefile
 src/netapps/Makefile

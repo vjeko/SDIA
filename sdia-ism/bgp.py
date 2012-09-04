@@ -134,7 +134,7 @@ class BGP( Int32StringReceiver ):
     print '------------------------'
 
 
-  def handlePacketIn(self, rpc):
+  def handlePacketIn(self, rpc, constraint = None):
     packet = rpc.Extensions[PacketInRequest.msg].packet
     srcV = rpc.Extensions[PacketInRequest.msg].srcV
     cookie = rpc.Extensions[PacketInRequest.msg].cookie
@@ -164,7 +164,7 @@ class BGP( Int32StringReceiver ):
 
 
 
-  def packetInResponse(self, srcV, dstV, cookie, address):
+  def packetInResponse(self, srcV, midV, dstV, cookie, address):
     rpc = RPC()
     rpc.type = RPC.PacketInResponse
     response = rpc.Extensions[PacketInResponse.msg]

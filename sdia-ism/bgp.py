@@ -164,7 +164,7 @@ class BGP( Int32StringReceiver ):
 
 
 
-  def packetInResponse(self, srcV, midV, dstV, cookie, address):
+  def packetInResponse(self, srcV, dstV, cookie, address):
     rpc = RPC()
     rpc.type = RPC.PacketInResponse
     response = rpc.Extensions[PacketInResponse.msg]

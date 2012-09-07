@@ -1,6 +1,6 @@
 from dpkt import *
+from socket import *
 
-import socket
 import os
 import sys
 import uuid
@@ -11,6 +11,8 @@ myUUID = uuid.getnode()
 
 class MessageType:
   ANNOUNCE = 0xaa
+  REQUEST = 0xbb
+  RESPONSE = 0xcc
 
 
 def getInterfaces():
@@ -24,14 +26,16 @@ def getInterfaces():
   return result
 
 
-def send(interface, srcEther, content):
+def send(interface, srcEther, srcIP, dstIP, nxt, content):
   
-  s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
+  s = socket(AF_PACKET, SOCK_RAW)
   s.bind( (interface, 0) )
 
   upper = ip6.IP6()
   upper.data = pickle.dumps(content)
-  upper.nxt = MessageType.ANNOUNCE
+  upper.src = srcIP
+  upper.dst = dstIP
+  upper.nxt = nxt
 
 
   eth = ethernet.Ethernet(
@@ -45,14 +49,37 @@ def send(interface, srcEther, content):
 
 
 
+def request(srcIP, dstIP):
+  
+  interfaces = getInterfaces()
+  hexUUID = hex(myUUID)
+  send(
+    interfaces[0], hexUUID, 
+    srcIP, dstIP, 
+    MessageType.REQUEST, 'firewall')
 
-def main():
+
+
+def announce():
   interfaces = getInterfaces()
   hexUUID = hex(myUUID)
   for interface in interfaces:
-    send(interface, hexUUID, 'firewall')
+    send(interface, hexUUID, 0, 0, MessageType.ANNOUNCE, 'firewall')
 
 
-for none in xrange(1000):
-  main()
-  time.sleep(1)
+
+def main():
+  src = sys.argv[1]
+  dst = sys.argv[2]
+
+  srcAddr = inet_pton(AF_INET6, src)
+  dstAddr = inet_pton(AF_INET6, dst)
+
+  request(srcAddr, dstAddr)
+
+  #for none in xrange(1000):
+  #  announce()
+  #  time.sleep(1)
+
+
+main()

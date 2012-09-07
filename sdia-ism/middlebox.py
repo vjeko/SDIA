@@ -20,6 +20,8 @@ import pickle
 
 class MessageType:
   ANNOUNCE = 0xaa
+  REQUEST = 0xbb
+  RESPONSE = 0xcc
 
 
 
@@ -102,6 +104,16 @@ class Middlebox( protocol ):
     
 
 
+  def findRemote(self, dstIP):
+    dstIPInt = int((dstIP).encode('hex'), 16)
+    dstIPAddr = IPv6Address(dstIPInt)
+    for (network, (domainId, vertex)) in self.remote.items():
+      if dstIPAddr not in IPv6Network(network): continue
+      return str(vertex)
+
+
+
+
 
 
   def handleDataReceive(self, rpc):
@@ -110,15 +122,29 @@ class Middlebox( protocol ):
 
     eth = dpkt.ethernet.Ethernet(data)
 
-    if eth.data.nxt != MessageType.ANNOUNCE:
-      protocol.handleDataReceive(self, rpc)
-      return
+    if eth.data.nxt == MessageType.ANNOUNCE:
+      serviceType = pickle.loads( data[len(eth):] )
+      self.findService[serviceType] = srcV
+      self.whatService[srcV] = serviceType
+      print 'service type', serviceType, 'from vertex', srcV
+    elif eth.data.nxt == MessageType.REQUEST:
+      (srcIP, dstIP, service) = pickle.loads( data[len(eth):] )
+      vertex = self.findRemote(dstIP)
+      if vertex is None:
+        print 'unable to find the destionation...'
+        return
 
-    serviceType = pickle.loads( data[len(eth):] )
-    self.findService[serviceType] = srcV
-    self.whatService[srcV] = serviceType
-    print 'service type', serviceType, 'from vertex', srcV
-    return
+      print 'received request', service
+      print 'forwarding request to vertex', vertex
+
+      print self.graph.edges()
+      neighbors = self.graph.neighbors(vertex)
+      if len(neighbors) == 0: return
+      protocol.dataPushRaw(self, neighbors.pop(), vertex, data)
+
+    else:
+      protocol.handleDataReceive(self, rpc)
+
 
 
   def connectionMade(self):

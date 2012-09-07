@@ -39,7 +39,7 @@ class BGP( Int32StringReceiver ):
 
   def handleTopology(self, rpc):
     dotStr     = rpc.Extensions[Topology.msg].dot
-    pyGraph    = pydot.graph_from_dot_data(dotStr)
+    pyGraph    = pydot.graph_from_dot_data(dotStr.encode('ascii'))
     aGraph     = pygraphviz.AGraph(string = dotStr)
     self.graph = networkx.from_agraph(aGraph)
 

@@ -8,6 +8,7 @@ from ctypes import c_uint16, c_uint32, c_uint64
 
 from interface_pb2 import *
 from openflow import *
+from dpkt import *
 
 import bgp
 import pydot
@@ -35,7 +36,6 @@ class Middlebox( protocol ):
     protocol.__init__(self, parentConf)
 
     self.conf = conf
-    print self.conf
     self.findService = {}
     self.whatService = {}
  
@@ -113,6 +113,26 @@ class Middlebox( protocol ):
 
 
 
+  def findLocal(self, dstIP):
+    dstIPInt = int((dstIP).encode('hex'), 16)
+    dstIPAddr = IPv6Address(dstIPInt)
+    for network in self.local:
+      if dstIPAddr not in IPv6Network(network): continue
+      return True
+
+    return False
+
+
+
+  def fwdToRemote(self, dstIP, packet):
+    vertex = self.findRemote(dstIP)
+    if vertex is None:
+      print 'unable to find the address...'
+    else:
+      print 'forwarding message to vertex', vertex
+
+      neighbors = self.graph.neighbors(vertex)
+      protocol.dataPushRaw(self, neighbors.pop(), vertex, packet)
 
 
 
@@ -123,27 +143,47 @@ class Middlebox( protocol ):
     eth = dpkt.ethernet.Ethernet(data)
 
     if eth.data.nxt == MessageType.ANNOUNCE:
+
       serviceType = pickle.loads( data[len(eth):] )
       self.findService[serviceType] = srcV
       self.whatService[srcV] = serviceType
       print 'service type', serviceType, 'from vertex', srcV
+
     elif eth.data.nxt == MessageType.REQUEST:
+
+      print 'received request'
       (srcIP, dstIP, service) = pickle.loads( data[len(eth):] )
-      vertex = self.findRemote(dstIP)
-      if vertex is None:
-        print 'unable to find the destionation...'
-        return
 
-      print 'received request', service
-      print 'forwarding request to vertex', vertex
+      if self.findLocal(dstIP):
+        print 'we are the last hop... generating response'
+        vertex = self.findRemote(srcIP)
+        response = self.generateResponse((dstIP, srcIP, 'ERROR'))
+        self.fwdToRemote(srcIP, response)
+      else:
+        self.fwdToRemote(dstIP, data)
 
-      print self.graph.edges()
-      neighbors = self.graph.neighbors(vertex)
-      if len(neighbors) == 0: return
-      protocol.dataPushRaw(self, neighbors.pop(), vertex, data)
+    elif eth.data.nxt == MessageType.RESPONSE:
+
+      (srcIP, dstIP, msg) = pickle.loads( data[len(eth):] )
+      print 'received response'
+      self.fwdToRemote(dstIP, data)
 
     else:
       protocol.handleDataReceive(self, rpc)
+
+
+  
+  def generateResponse(self, content):
+    upper = ip6.IP6()
+    upper.data = pickle.dumps(content)
+    upper.nxt = MessageType.RESPONSE
+
+    eth = ethernet.Ethernet(
+      type = 34525,
+      data = upper
+    )
+
+    return str(eth)
 
 
 
@@ -151,8 +191,10 @@ class Middlebox( protocol ):
     self.sendInit()
 
 
+
   def handleInitResponse(self, rpc):
     protocol.handleInitResponse(self, rpc)
+
 
 
   def handleTopology(self, rpc):

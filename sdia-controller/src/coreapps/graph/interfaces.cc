@@ -246,8 +246,9 @@ void server::start_accept() {
 
 void graph::ism_interface() {
 
-  auto port = get_random<uint16_t>(1025);
-  std::cout << "Listening on port: " << port << std::endl;
+  const auto& args = ctxt->get_config_list("args");
+  const uint16_t port = boost::lexical_cast<uint16_t>(args.front());
+  std::cout << "Listening on port " << port << std::endl;
 
   try {
     boost::asio::io_service io_service;

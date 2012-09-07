@@ -18,6 +18,17 @@ void graph::install() {
 
 void graph::configure() {
 
+  if (ctxt->has("args")) {
+
+    const auto& args = ctxt->get_config_list("args");
+
+    if (args.size() < 1) {
+        std::runtime_error("port not specified!");
+    }
+
+  }
+
+
   register_handler("Openflow_datapath_join_event", (boost::bind(&graph::join, this, _1)));
   register_handler("ofp_packet_in", (boost::bind(&graph::handle, this, _1)));
 }

@@ -81,13 +81,20 @@ class BGP( Int32StringReceiver ):
 
 
 
-  def dataPush(self, srcV, dstV):
+  def dataPushRaw(self, srcV, dstV, data):
     rpc = RPC()
     rpc.type = RPC.DataPush
     update = rpc.Extensions[DataPush.msg]
     update.srcV = int(srcV)
     update.dstV = int(dstV)
 
+    update.data = data
+    self.sendToController( rpc.SerializeToString() )
+
+
+
+
+  def dataPush(self, srcV, dstV):
     remotePrefixes = dict( filter(
       lambda (prefix, (domainID, vertex)): int(vertex) != int(dstV),
       self.remote.iteritems()) )
@@ -101,11 +108,9 @@ class BGP( Int32StringReceiver ):
       self.local)
 
     advertisedPrefixes = remotePrefixes + localPrefixes
-
     eth = self.encapsulate( advertisedPrefixes )
-    update.data = str(eth)
-    self.sendToController( rpc.SerializeToString() )
 
+    self.dataPushRaw( srcV, dstV, str(eth) )
 
 
   def encapsulate(self, data):

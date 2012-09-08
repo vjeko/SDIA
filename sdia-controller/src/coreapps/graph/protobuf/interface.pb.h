@@ -648,6 +648,17 @@ class PacketInResponse : public ::google::protobuf::Message {
   inline ::std::string* mutable_match();
   inline ::std::string* release_match();
   
+  // optional bytes action = 6;
+  inline bool has_action() const;
+  inline void clear_action();
+  static const int kActionFieldNumber = 6;
+  inline const ::std::string& action() const;
+  inline void set_action(const ::std::string& value);
+  inline void set_action(const char* value);
+  inline void set_action(const void* value, size_t size);
+  inline ::std::string* mutable_action();
+  inline ::std::string* release_action();
+  
   static const int kMsgFieldNumber = 105;
   static ::google::protobuf::internal::ExtensionIdentifier< ::RPC,
       ::google::protobuf::internal::MessageTypeTraits< ::PacketInResponse >, 11, false >
@@ -664,6 +675,8 @@ class PacketInResponse : public ::google::protobuf::Message {
   inline void clear_has_dstv();
   inline void set_has_match();
   inline void clear_has_match();
+  inline void set_has_action();
+  inline void clear_has_action();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -672,9 +685,10 @@ class PacketInResponse : public ::google::protobuf::Message {
   ::google::protobuf::uint32 midv_;
   ::google::protobuf::uint32 dstv_;
   ::std::string* match_;
+  ::std::string* action_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
   
   friend void  protobuf_AddDesc_interface_2eproto();
   friend void protobuf_AssignDesc_interface_2eproto();
@@ -1325,6 +1339,64 @@ inline ::std::string* PacketInResponse::release_match() {
   } else {
     ::std::string* temp = match_;
     match_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional bytes action = 6;
+inline bool PacketInResponse::has_action() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void PacketInResponse::set_has_action() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void PacketInResponse::clear_has_action() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void PacketInResponse::clear_action() {
+  if (action_ != &::google::protobuf::internal::kEmptyString) {
+    action_->clear();
+  }
+  clear_has_action();
+}
+inline const ::std::string& PacketInResponse::action() const {
+  return *action_;
+}
+inline void PacketInResponse::set_action(const ::std::string& value) {
+  set_has_action();
+  if (action_ == &::google::protobuf::internal::kEmptyString) {
+    action_ = new ::std::string;
+  }
+  action_->assign(value);
+}
+inline void PacketInResponse::set_action(const char* value) {
+  set_has_action();
+  if (action_ == &::google::protobuf::internal::kEmptyString) {
+    action_ = new ::std::string;
+  }
+  action_->assign(value);
+}
+inline void PacketInResponse::set_action(const void* value, size_t size) {
+  set_has_action();
+  if (action_ == &::google::protobuf::internal::kEmptyString) {
+    action_ = new ::std::string;
+  }
+  action_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PacketInResponse::mutable_action() {
+  set_has_action();
+  if (action_ == &::google::protobuf::internal::kEmptyString) {
+    action_ = new ::std::string;
+  }
+  return action_;
+}
+inline ::std::string* PacketInResponse::release_action() {
+  clear_has_action();
+  if (action_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = action_;
+    action_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }

@@ -26,12 +26,11 @@ const size_t push_mpls(
     std::set<uint16_t> in_port,
     std::set<uint16_t> out_set,
     const uint32_t l,
-    const std::string tlv_match
+    const std::string tlv_match,
+    const std::string action = ""
     ) {
 
-  const size_t tlv_size =
-      ( sizeof(ovs_be32) + sizeof(ovs_be16) ) +
-      ( sizeof(ovs_be32) + sizeof(ovs_be64)*2 );
+  const size_t tlv_size = tlv_match.size();
 
   const size_t tlv_size_aligned =
       tlv_size + (8 - (tlv_size % 8)) % 8;
@@ -68,7 +67,8 @@ const size_t push_mpls(
   memcpy(raw_of.get() + sizeof(nx_flow_mod),
       tlv_match.c_str(), tlv_match.size());
 
-  hexdump(raw_of.get() + sizeof(nx_flow_mod), 26);
+  std::cout << "Match size: " << tlv_match.size() << std::endl;
+  hexdump(raw_of.get() + sizeof(nx_flow_mod), tlv_match.size());
 
   nx_action_push_mpls& action_push = *(
    (nx_action_push_mpls*) (raw_of.get() +

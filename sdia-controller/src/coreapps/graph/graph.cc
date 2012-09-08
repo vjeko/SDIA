@@ -83,8 +83,13 @@ Disposition graph::handle(const Event& e) {
     return STOP;
   }
 
+  std::cout << flow.dl_type() << std::endl;
+
   /* Handle only IP6 packets. */
-  if (flow.dl_type() != ntohs(ethernet::IPV6)) {
+  if (flow.dl_type() != ntohs(ethernet::IPV6) &&
+      flow.dl_type() != 0x8847) {
+
+    std::cout << "Stopping!" << std::endl;
     return STOP;
   }
 
@@ -94,11 +99,11 @@ Disposition graph::handle(const Event& e) {
   if (is_unicast(flow.dl_src())) {
     srcV = collect(ofe, pi);
   }
-
+/*
   const ip6_hdr& ip6 = pull_type<ip6_hdr>( pi.packet(), sizeof(eth_header) );
   const uint32_t flow_label = get_flow(ip6);
   printf("IDR %d is responsible for routing this packet.\n", flow_label);
-
+*/
   if (flow.dl_dst().is_zero()) {
     update_receive(ofe, pi);
     return STOP;
@@ -114,10 +119,8 @@ Disposition graph::handle(const Event& e) {
   if (is_unicast(flow)) {
 
     const uint32_t label = get_random<uint32_t>();
-    auto p = std::make_pair(ip6.ip6_src, ip6.ip6_dst);
-    labeling_[label] = p;
-
     distribute_packet(pi, label, srcV);
+
   } else {
     /*
      * Otherwise, just flood.

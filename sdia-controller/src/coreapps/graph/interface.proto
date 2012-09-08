@@ -66,6 +66,7 @@ message PacketInResponse {
   optional uint32 midV   = 3;
   required uint32 dstV   = 4;
   required bytes match   = 5;
+  optional bytes action  = 6;
    
 }
 

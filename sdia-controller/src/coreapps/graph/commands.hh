@@ -27,7 +27,7 @@ const size_t push_mpls(
     std::set<uint16_t> out_set,
     const uint32_t l,
     const std::string tlv_match,
-    const std::string action = ""
+    const std::string action
     ) {
 
   const size_t tlv_size = tlv_match.size();
@@ -37,6 +37,7 @@ const size_t push_mpls(
 
   const size_t size =
       sizeof(nx_flow_mod) +
+      action.size() +
       sizeof(nx_action_push_mpls) +
       sizeof(nx_action_mpls_label) +
       sizeof(ofp_action_output) +
@@ -67,12 +68,18 @@ const size_t push_mpls(
   memcpy(raw_of.get() + sizeof(nx_flow_mod),
       tlv_match.c_str(), tlv_match.size());
 
+  memcpy(raw_of.get() + sizeof(nx_flow_mod) + tlv_size_aligned,
+      action.c_str(), action.size());
+
   std::cout << "Match size: " << tlv_match.size() << std::endl;
-  hexdump(raw_of.get() + sizeof(nx_flow_mod), tlv_match.size());
+  std::cout << "Action size: " << action.size() << std::endl;
+
+  //hexdump(raw_of.get() + sizeof(nx_flow_mod), tlv_match.size());
+  hexdump(raw_of.get() + sizeof(nx_flow_mod) + tlv_size_aligned, action.size());
 
   nx_action_push_mpls& action_push = *(
    (nx_action_push_mpls*) (raw_of.get() +
-       sizeof(nx_flow_mod) + tlv_size_aligned )
+       sizeof(nx_flow_mod) + tlv_size_aligned + action.size() )
    );
 
    memset(&action_push, 0, sizeof(nx_action_push_mpls));
@@ -83,7 +90,8 @@ const size_t push_mpls(
    action_push.ethertype = htons(0x8847);
 
    nx_action_mpls_label& label_action = *((nx_action_mpls_label*) (raw_of.get()
-       + sizeof(nx_flow_mod) + tlv_size_aligned + sizeof(nx_action_push_mpls)));
+       + sizeof(nx_flow_mod) + tlv_size_aligned + action.size() +
+       sizeof(nx_action_push_mpls)));
 
    memset(&label_action, 0, sizeof(nx_action_mpls_label));
    label_action.type = htons(0xffff);
@@ -93,7 +101,7 @@ const size_t push_mpls(
    label_action.mpls_label = htonl(0x000FFFFF & l);
 
   ofp_action_output& action_output = *((ofp_action_output*) (
-      raw_of.get() + sizeof(nx_flow_mod) + tlv_size_aligned +
+      raw_of.get() + sizeof(nx_flow_mod) + tlv_size_aligned + action.size() +
       sizeof(nx_action_push_mpls) + sizeof(nx_action_mpls_label)
       ));
 
@@ -184,6 +192,7 @@ const size_t pop_mpls(
   action_pop.subtype =  htons(NXAST_POP_MPLS);
   action_pop.ethertype = htons(0x86DD);
 
+  std::cout << "NXAST_POP_MPLS: " << NXAST_POP_MPLS << std::endl;
 
   ofp_action_output& action_output = *((ofp_action_output*) (raw_of.get()
       + sizeof(nx_flow_mod) + sizeof(nx_action_pop_mpls) + tlv_size_aligned));

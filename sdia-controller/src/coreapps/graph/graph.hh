@@ -133,7 +133,8 @@ public:
       const uint32_t label,
       const std::string tlv_match,
       const vertex_t sndV,
-      const vertex_t rcvV);
+      const vertex_t rcvV,
+      const std::string action = "");
 
   void establish(
       const uint32_t label,
@@ -184,13 +185,15 @@ public:
       const uint32_t label,
       const std::string tlv_match,
       const std::deque<dp_link> link_queue,
-      aggregate_map_t& aggregate_map);
+      aggregate_map_t& aggregate_map,
+      const std::string action = "");
 
   void minject(
       const aggregate_map_t::mapped_type& flow_set,
       const ActionType action_type,
       const uint32_t label,
-      const std::string tlv_match);
+      const std::string tlv_match,
+      const std::string action);
 
   const size_t normal_forward(
       const v1::ofp_packet_in& pi,

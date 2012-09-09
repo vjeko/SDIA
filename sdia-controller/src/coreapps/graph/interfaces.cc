@@ -90,6 +90,13 @@ void session::handlePacketInResponse(RPC& rpc) {
         response.srcv(),
         response.midv(),
         response.dstv());
+  } else if (response.has_action()) {
+    graph_->establish(
+        response.cookie(),
+        response.match(),
+        response.srcv(),
+        response.dstv(),
+        response.action());
   } else {
     graph_->establish(
         response.cookie(),

@@ -87,7 +87,8 @@ Disposition graph::handle(const Event& e) {
 
   /* Handle only IP6 packets. */
   if (flow.dl_type() != ntohs(ethernet::IPV6) &&
-      flow.dl_type() != 0x8847) {
+      flow.dl_type() != 0x8847 &&
+      flow.dl_type() != 0x0) {
 
     std::cout << "Stopping!" << std::endl;
     return STOP;
@@ -386,7 +387,8 @@ void graph::establish(
     const uint32_t label,
     const std::string tlv_match,
     const vertex_t sndV,
-    const vertex_t rcvV) {
+    const vertex_t rcvV,
+    const std::string action) {
 
   std::deque<dp_link> link_queue;
   establish_impl(label, tlv_match, sndV, rcvV, link_queue);
@@ -407,7 +409,7 @@ void graph::establish(
   }
 
   aggregate_map_t aggregate_map;
-  aggregate_flows(label, tlv_match, link_queue, aggregate_map);
+  aggregate_flows(label, tlv_match, link_queue, aggregate_map, action);
 }
 
 
@@ -527,7 +529,8 @@ void graph::aggregate_flows(
     const uint32_t label,
     const std::string tlv_match,
     const std::deque<dp_link> link_queue,
-    aggregate_map_t& aggregate_map) {
+    aggregate_map_t& aggregate_map,
+    const std::string action) {
 
   BOOST_ASSERT(link_queue.size() % 2 == 0);
 
@@ -545,11 +548,11 @@ void graph::aggregate_flows(
     s.insert(p);
 
     if (count == 1) {
-      minject(s, ActionType::PUSH,label, tlv_match);
+      minject(s, ActionType::PUSH,label, tlv_match, action);
     } else if (count == (link_queue.size()/2)) {
-      minject(s, ActionType::POP, label, tlv_match);
+      minject(s, ActionType::POP, label, tlv_match, action);
     } else {
-      minject(s, ActionType::FWD, label, tlv_match);
+      minject(s, ActionType::FWD, label, tlv_match, action);
     }
 
     count++;
@@ -578,7 +581,8 @@ void graph::minject(
     const std::set<link_pair_t>& flow_set,
     const ActionType action_type,
     const uint32_t label,
-    const std::string tlv_match) {
+    const std::string tlv_match,
+    const std::string action) {
 
   typedef std::set<uint16_t> port_set_t;
   port_set_t in_set, out_set;
@@ -605,7 +609,7 @@ void graph::minject(
     i->second->send_raw((const char*) raw_of.get(), size);
   } else if(action_type == ActionType::PUSH) {
     struct in6_addr address = labeling_[label].second;
-    const size_t size = detail::push_mpls(address, raw_of, in_set, out_set, label, tlv_match);
+    const size_t size = detail::push_mpls(address, raw_of, in_set, out_set, label, tlv_match, action);
     i->second->send_raw((const char*) raw_of.get(), size);
   } else if(action_type == ActionType::POP) {
     const size_t size = detail::pop_mpls(raw_of, in_set, out_set, label);

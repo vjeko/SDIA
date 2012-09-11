@@ -21,16 +21,20 @@ struct shim_hdr {
   u_int32_t shim_label;   /* 20 bit label, 4 bit exp & BoS, 8 bit TTL */
 };
 
-struct nf_hook_ops nfho;
-struct sk_buff *sock_buff;
-struct shim_hdr* mpls;
 
+#define PATHLET_SIZE 8
+#define NUM_PATHLETS 4
+#define STRING_SIZE PATHLET_SIZE * 2
+#define MEM_SIZE (STRING_SIZE * PATHLET_SIZE)
+
+long long unsigned path[NUM_PATHLETS];
+unsigned char userData[MEM_SIZE * 2];
+int counter = 0;
+
+static struct nf_hook_ops nfho;
 static struct proc_dir_entry *omega_proc;
-static u_int32_t path = 0;
-unsigned char userData[8];
 
 #define omega_proc_name "pathlet"
-#define PATHLET_SIZE 4
 
 #define MPLS_LABEL_MASK    0xfffff000
 #define MPLS_QOS_MASK      0x00000e00
@@ -43,26 +47,34 @@ unsigned char userData[8];
 
 
 
-void set_mpls(const void *buf, u_int32_t label, u_int32_t bottom_stack) {
+void set_mpls(struct shim_hdr* mpls, u_int32_t label, u_int32_t bottom_stack) {
+
+
   mpls->shim_label = (label << MPLS_LABEL_SHIFT);
-  mpls->shim_label |= bottom_stack;
+  mpls->shim_label = mpls->shim_label | bottom_stack;
   mpls->shim_label = htonl(mpls->shim_label);
+
+  //printk("MPLS Label: %x\n", mpls->shim_label);
 }
 
 
 
-unsigned int push_mpls(struct sk_buff* skb, u_int32_t label, u_int32_t bottom_stack) {
+int push_mpls(struct sk_buff* skb, u_int32_t label, u_int32_t bottom_stack) {
+
+  if (label == 0xff) return 0;
+
+  printk(KERN_INFO "Path: %x\n", label);
   const size_t mpls_size = sizeof(struct shim_hdr);
   if (0 != pskb_expand_head(skb, mpls_size, 0,  GFP_ATOMIC)) {
-    return NF_DROP;
+    return 1;
   }
 
-  mpls = (struct shim_hdr*) skb_push(skb, mpls_size);
+  struct shim_hdr* mpls = (struct shim_hdr*) skb_push(skb, mpls_size);
   memset(mpls, 0x00, sizeof(struct shim_hdr));
 
   set_mpls(mpls, label, bottom_stack);
 
-  return NF_ACCEPT;
+  return 0;
 }
 
 
@@ -74,25 +86,33 @@ unsigned int pathlet_post_routing(
     const struct net_device *out,
     int (*okfn) (struct sk_buff *) ) {
 
-  printk(KERN_INFO "Path entire: %x\n", path);
 
-  const char* hops = (const char*) &path;
-
-  sock_buff = skb;
+  struct sk_buff* sock_buff = skb;
   if (!sock_buff) return NF_ACCEPT;
 
-  //push_mpls(sock_buff, 2, MPLS_STACK_BOTTOM);
 
-  printk(KERN_INFO "Path: %x\n", hops[PATHLET_SIZE - 1]);
-  push_mpls(sock_buff, hops[PATHLET_SIZE - 1], MPLS_STACK_BOTTOM);
+  struct ipv6hdr* ip6_header = (struct ipv6hdr*) skb_network_header(sock_buff);
+  if (!ip6_header)
+    return NF_ACCEPT;
 
-
-  for(int i = PATHLET_SIZE - 2; i >= 0; i--) {
-    u_int32_t label = hops[i];
-    push_mpls(sock_buff, label, 0);
-    printk(KERN_INFO "Path: %x\n", label);
+  const char byte = ip6_header->daddr.in6_u.u6_addr8[15];
+  int random = counter % 2;
+  counter += 3;
+  const char* hops;
+  if (byte == 0x01) {
+    hops = (const char*) &path[0 + random];
+  } else {
+    hops = (const char*) &path[2 + random];
   }
 
+  int offset = 0;
+  u_int8_t label = hops[offset];
+  push_mpls(sock_buff, label, MPLS_STACK_BOTTOM);
+
+  for(offset++; offset < PATHLET_SIZE/2; offset++) {
+    label = hops[offset];
+    push_mpls(sock_buff, label, 0);
+  }
 
   skb_reset_transport_header(skb);
   skb_reset_network_header(skb);
@@ -117,8 +137,6 @@ int skb_read(char *page, char **start, off_t off,
     return -ENOSPC;
   }
 
-  /* cpy to userspace */
-  memcpy(page, &path, sizeof(int));
   len = sizeof(int);
 
   return len;
@@ -133,11 +151,24 @@ int skb_write(struct file *file, const char *buffer, unsigned long len,
     return -ENOSPC;
   }
 
-  if (copy_from_user(userData, buffer, PATHLET_SIZE * 2)) {
+  if (copy_from_user(userData, buffer, MEM_SIZE )) {
     return -EFAULT;
   }
 
-  path = simple_strtol(userData, NULL, 16);
+  int result = 0;
+  char cpaths[NUM_PATHLETS][STRING_SIZE + 1];
+  for(int i = 0; i < NUM_PATHLETS; i++) {
+    memset(cpaths[i], 0, STRING_SIZE + 1);
+    memcpy(cpaths[i], userData + i * STRING_SIZE, STRING_SIZE);
+    printk("Userdata: %s\n", cpaths[i]);
+    result |= strict_strtoull(cpaths[i], 16, &path[i]);
+    printk("%d %llx\n", i, path[i]);
+  }
+
+  if(result) {
+    printk("Problem parsing the arguments.\n");
+  }
+
 
   return len;
 }

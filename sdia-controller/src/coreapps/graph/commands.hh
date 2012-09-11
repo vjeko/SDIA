@@ -192,10 +192,8 @@ const size_t pop_mpls(
   action_pop.subtype =  htons(NXAST_POP_MPLS);
   action_pop.ethertype = htons(0x86DD);
 
-  std::cout << "NXAST_POP_MPLS: " << NXAST_POP_MPLS << std::endl;
-
   ofp_action_output& action_output = *((ofp_action_output*) (raw_of.get()
-      + sizeof(nx_flow_mod) + sizeof(nx_action_pop_mpls) + tlv_size_aligned));
+      + sizeof(nx_flow_mod) + sizeof(nx_action_pop_mpls) + tlv_size_aligned) );
 
   auto out_it = out_set.begin();
 

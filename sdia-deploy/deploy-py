@@ -19,28 +19,32 @@ def parse():
   short = {}
   count = 0
 
+  print( nx.edges(g) )
   for e in nx.edges(g):
+    e = sorted(e)
     
     src = e[0]
     dst = e[1]
 
-    if src not in short: 
-      short[src] = count
-      count = count + 1
+    ##if src not in short:
+    ##  short[src] = count
+    ##  count = count + 1
     
-    if dst not in short: 
-      short[dst] = count
-      count = count + 1
+    ##if dst not in short:
+    ##  short[dst] = count
+    ##  count = count + 1
     
-    src = short[src]
-    dst = short[dst]
+    ##src = short[src]
+    ##dst = short[dst]
 
     nodes.add( src )
     nodes.add( dst )
     edges.append( [src, dst] )
 
+  print(edges)
   for n in nx.get_node_attributes(g, 'name'):
     nodes.add( n )
+
 
 
 def execute(command, interval = 0):

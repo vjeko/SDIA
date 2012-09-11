@@ -34,6 +34,8 @@ int counter = 0;
 static struct nf_hook_ops nfho;
 static struct proc_dir_entry *omega_proc;
 
+struct file* urandom;
+
 #define omega_proc_name "pathlet"
 
 #define MPLS_LABEL_MASK    0xfffff000
@@ -63,7 +65,7 @@ int push_mpls(struct sk_buff* skb, u_int32_t label, u_int32_t bottom_stack) {
 
   if (label == 0xff) return 0;
 
-  printk(KERN_INFO "Path: %x\n", label);
+  //printk(KERN_INFO "Path: %x\n", label);
   const size_t mpls_size = sizeof(struct shim_hdr);
   if (0 != pskb_expand_head(skb, mpls_size, 0,  GFP_ATOMIC)) {
     return 1;
@@ -96,9 +98,15 @@ unsigned int pathlet_post_routing(
     return NF_ACCEPT;
 
   const char byte = ip6_header->daddr.in6_u.u6_addr8[15];
-  int random = counter % 2;
-  counter += 3;
+
+
+
+  u_int32_t random = 0;
+  get_random_bytes(&random, sizeof(u_int32_t));
+  random = random % 2;
+
   const char* hops;
+
   if (byte == 0x01) {
     hops = (const char*) &path[0 + random];
   } else {

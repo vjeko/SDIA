@@ -33,7 +33,6 @@ int otp_func(struct sk_buff *skb, struct device *dv, struct packet_type *pt) {
   struct ethhdr* eth = (struct ethhdr*) skb_mac_header(skb);
   if ( (skb->pkt_type == PACKET_OUTGOING) && (ntohs(eth->h_proto) == 0x86DD) ) {
     eth->h_proto = htons(0x8847);
-    //printk("OUTGOING: %s\n", skb->dev->name);
   }
 
   return 0;
@@ -52,11 +51,11 @@ int init_module() {
 
 void cleanup_module() {
   dev_remove_pack(&otp_proto);
-    printk("OTP unloaded\n");
+    printk("Pathlet unloaded\n");
 }
 
 
 MODULE_AUTHOR("ICSI");
-MODULE_DESCRIPTION("Omega Layer");
+MODULE_DESCRIPTION("Pathlet Layer");
 MODULE_LICENSE("GPL");
 

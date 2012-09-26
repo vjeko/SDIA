@@ -13,6 +13,7 @@
 #include <sstream>
 #include <arpa/inet.h>
 
+#include <boost/array.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
